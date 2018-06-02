@@ -19,5 +19,8 @@ After entering the api key and restaurant name, the user are given a list of res
 - https://bl.ocks.org/mbostock/1095795
 
 
-## Tips
+## notice
 To get an oauth token go https://developer.foursquare.com/docs/explore#req=users/self , login and see the token in the grey box.
+
+
+Jinwei Boy
