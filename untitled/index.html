@@ -159,6 +159,7 @@
                 //remove this element.
                 this.parentElement.removeChild(this);
 
+
                 loadJSON('https://api.foursquare.com/v2/venues/' + restaurantChosen + '/similar?oauth_token=' + API + '&v=' + dataOfToday(),
                     function (data) {
                         restaurantSimilar = data;
