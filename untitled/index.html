@@ -41,14 +41,23 @@
         <br>
     </div>
 
-    <div class="list-group">
-        <a href="#" class="list-group-item list-group-item-action active">
-            Cras justo odio
-        </a>
-        <a href="#" class="list-group-item list-group-item-action">Dapibus ac facilisis in</a>
-        <a href="#" class="list-group-item list-group-item-action">Morbi leo risus</a>
-        <a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>
-        <a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>
+    <div class="list-group" id="restaurant-list">
+
+    <!--<a href="#" class="list-group-item list-group-item-action">Dapibus ac facilisis in</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Morbi leo risus</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
+    <!--<a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>-->
     </div>
 
     <p class="mt-5 mb-3 text-muted">&copy; Jinwei Zhang</p>
@@ -117,40 +126,77 @@
         return today;
 
     }
+
+    function addingList(obj) {
+        //phrase the json object into the variable
+
+        var jsonObj = JSON.parse(obj);
+        //console.log(jsonObj);
+
+
+        var iDiv = document.createElement('div');
+        iDiv.id = 'block';
+        iDiv.className = 'block';
+
+        // Create the inner div before appending to the body
+        var innerHref = document.createElement('a');
+        var listText = document.createTextNode("restaurant");
+        innerHref.className = 'list-group-item list-group-item-action';
+        innerHref.appendChild(listText);
+
+        // The variable iDiv is still good... Just append to it.
+        iDiv.appendChild(innerHref);
+
+        // Then append the whole thing onto the body
+        document.getElementById("restaurant-list").appendChild(iDiv);
+    }
+
+
+
+    //search the restaurant
     function searchRest() {
 
         var restaurant = document.getElementById('example-text-input').value;
         var API = document.getElementById('inputPassword').value;
-        var allRetuenRestaurant;
-        var restaurantSimilar;
+        var allReturnedRestaurant;
 
+
+
+        //load the json data
         if (API.length != 0 && restaurant.length != 0) {
 
 
-            loadJSON('https://api.foursquare.com/v2/venues/search?near=London&query={venueName}&oauth_token=' + API + '&v='+dataOfToday(),
+            loadJSON('https://api.foursquare.com/v2/venues/search?near=London&query={venueName}&oauth_token=' + API + '&v=' + dataOfToday(),
                 function (data) {
                     alert("succeed");
-                    allRetuenRestaurant = data;
-                    console.log(allRetuenRestaurant);
-                   // console.log(dataOfToday());
+                    allReturnedRestaurant = JSON.stringify(data);
+                  //  console.log(allRetuenRestaurant);
+                    // console.log(dataOfToday());
+                    addingList(allReturnedRestaurant);
                 },
                 function (xhr) {
-                    alert("restaurant or oauth_token is wrong");
+                    alert("finding all restaurant failed");
                     console.error(xhr);
                 }
             );
-
-            loadJSON('https://api.foursquare.com/v2/venues/' + restaurant + '/similar?oauth_token=' + API,
-                function (data) {
-                    restaurantSimilar = data
-                    console.log(restaurantSimilar);
-
-                },
-                function (xhr) {
-                    console.error(xhr);
-                }
-            );
+//            var restaurantSimilar;
+//            loadJSON('https://api.foursquare.com/v2/venues/' + restaurant + '/similar?oauth_token=' + API+ '&v=' +dataOfToday(),
+//                function (data) {
+//                    restaurantSimilar = data
+//                    console.log(restaurantSimilar);
+//                    addingList();
+//
+//                },
+//                function (xhr) {
+//                    alert("finding similar restaurant failed");
+//                    console.error(xhr);
+//                }
+//            );
         }
+
+
+
+
     }
 
 
