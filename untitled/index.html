@@ -29,13 +29,28 @@
 
     <input type="password" id="inputPassword" class="form-control" placeholder="Oauth token" required>
 
+
     <div class="checkbox mb-3">
         <label>
             <input type="checkbox" value="remember-me"> Remember me
         </label>
     </div>
 
-    <button class="btn btn-lg btn-primary btn-block" onclick=" searchRest()">Search</button>
+    <div>
+        <button class="btn btn-lg btn-primary btn-block" onclick=" searchRest()">Search</button>
+        <br>
+    </div>
+
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action active">
+            Cras justo odio
+        </a>
+        <a href="#" class="list-group-item list-group-item-action">Dapibus ac facilisis in</a>
+        <a href="#" class="list-group-item list-group-item-action">Morbi leo risus</a>
+        <a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>
+        <a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>
+    </div>
+
     <p class="mt-5 mb-3 text-muted">&copy; Jinwei Zhang</p>
 </form>
 
@@ -82,19 +97,42 @@
         xhr.send();
     }
 
+
+    //get the data of today.
+    function dataOfToday() {
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1; //January is 0!
+
+        var yyyy = today.getFullYear();
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        if (mm < 10) {
+            mm = '0' + mm;
+        }
+        var today = yyyy + mm + dd;
+
+        //document.getElementById("DATE").value = today;
+        return today;
+
+    }
     function searchRest() {
 
         var restaurant = document.getElementById('example-text-input').value;
         var API = document.getElementById('inputPassword').value;
+        var allRetuenRestaurant;
         var restaurantSimilar;
 
         if (API.length != 0 && restaurant.length != 0) {
 
 
-            loadJSON('https://api.foursquare.com/v2/venues/search?near=London&query={venueName}&oauth_token=' + API,
+            loadJSON('https://api.foursquare.com/v2/venues/search?near=London&query={venueName}&oauth_token=' + API + '&v='+dataOfToday(),
                 function (data) {
                     alert("succeed");
-                    console.log(data);
+                    allRetuenRestaurant = data;
+                    console.log(allRetuenRestaurant);
+                   // console.log(dataOfToday());
                 },
                 function (xhr) {
                     alert("restaurant or oauth_token is wrong");
@@ -104,8 +142,9 @@
 
             loadJSON('https://api.foursquare.com/v2/venues/' + restaurant + '/similar?oauth_token=' + API,
                 function (data) {
-                    console.log(data);
                     restaurantSimilar = data
+                    console.log(restaurantSimilar);
+
                 },
                 function (xhr) {
                     console.error(xhr);
