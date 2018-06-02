@@ -93,8 +93,7 @@
     var restaurantName;
     //oauth_token token input
     var API;
-    //similar restaurant that user choose.
-    var restaurantSimilar;
+
 
 
     function loadJSON(path, success, error) {
@@ -135,6 +134,14 @@
 
     }
 
+    //construct the root node and simulate the directed graph
+    function constructGraph(similar_Obj){
+        var jsonObj = JSON.parse(similar_Obj);
+
+    }
+
+    //passing the input restaurant when user click the right restaurant return the right
+    //forced directed data that need to model.
     function addingList(obj) {
 
         //first clear the elements in the div block for the second search.
@@ -145,27 +152,26 @@
 
         //phrase the json object into the variable
         var jsonObj = JSON.parse(obj);
-        console.log(jsonObj);
         var restaurantArr = jsonObj.response.venues;
         var i;
 
         for (i = 0; i < restaurantArr.length; i++) {
-            // Create the inner text appending to the body
-            var listText = document.createTextNode(restaurantArr[i].name);
+
 
             var innerHref = document.createElement('a');
             innerHref.className = 'list-group-item list-group-item-action';
+            //the ID number of the restaurant
+            innerHref.id = restaurantArr[i].id;
             innerHref.onclick = function () {
                 //remove this element.
-                this.parentElement.removeChild(this);
-
-
-                loadJSON('https://api.foursquare.com/v2/venues/' + restaurantChosen + '/similar?oauth_token=' + API + '&v=' + dataOfToday(),
+                //this.parentElement.removeChild(this);
+                console.log(this.id);
+                //phrase the json data online.
+                loadJSON('https://api.foursquare.com/v2/venues/' + this.id + '/similar?oauth_token=' + API + '&v=' + dataOfToday(),
                     function (data) {
-                        restaurantSimilar = data;
-                        console.log(restaurantSimilar);
-                        addingList();
 
+                        var similar = allReturnedRestaurant = JSON.stringify(data);
+                        constructGraph(similar);
                     },
                     function (xhr) {
                         alert("finding similar restaurant failed");
@@ -174,6 +180,9 @@
                 );
             };
 
+            // Create the inner text appending to the body
+            //the restaurant name
+            var listText = document.createTextNode(restaurantArr[i].name);
             innerHref.appendChild(listText);
             // Then append the whole thing onto the body
             document.getElementById("restaurant-list").appendChild(innerHref);
@@ -199,8 +208,6 @@
                 function (data) {
                     alert("succeed");
                     allReturnedRestaurant = JSON.stringify(data);
-                    //console.log(allRetuenRestaurant);
-                    // console.log(dataOfToday());
                     addingList(allReturnedRestaurant);
                 },
                 function (xhr) {
@@ -215,78 +222,78 @@
     }
 
 
-    //
-    //
-    //    var width = 960, height = 800;
-    //    var links = [
-    //        {source: 'Baratheon', target: 'Lannister'},
-    //        {source: 'Baratheon', target: 'Stack'},
-    //        {source: 'Lannister', target: 'Stack'},
-    //        {source: 'jinwei', target: 'Lannister'},
-    //        {source: 'Baratheon', target: 'jinwei'},
-    //        {source: 'jinwei', target: 'shabi'},
-    //    ]
-    //
-    //    var nodes = {};
-    //    //parse the linked to nodes
-    //    links.forEach(function (link) {
-    //        link.source = nodes[link.source] ||
-    //            (nodes[link.source] = {name: link.source});
-    //        link.target = nodes[link.target] ||
-    //            (nodes[link.target] = {name: link.target});
-    //    });
-    //
-    //
-    //    var svg = d3.select('body').append('svg')
-    //        .attr('width', width)
-    //        .attr('height', height);
-    //
-    //    var force = d3.layout.force() //build the layout
-    //        .size([width, height])
-    //        .nodes(d3.values(nodes))
-    //        .links(links)
-    //        .on("tick", tick)
-    //        .linkDistance(300)
-    //        .start();
-    //
-    //    // add the links
-    //    var link = svg.selectAll('.link')
-    //        .data(links)
-    //        .enter().append('line')
-    //        .attr('class', 'link');
-    //
-    //    // add the nodes
-    //    var node = svg.selectAll('.node')
-    //        .data(force.nodes()) //add
-    //        .enter().append('circle')
-    //        .attr('class', 'node')
-    //        .attr('r', width * 0.03) //radius of circle
-    //
-    //
-    //    function tick(e) {
-    //
-    //        node.attr('cx', function (d) {
-    //            return d.x;
-    //        })
-    //            .attr('cy', function (d) {
-    //                return d.y;
-    //            })
-    //            .call(force.drag);
-    //
-    //        link.attr('x1', function (d) {
-    //            return d.source.x;
-    //        })
-    //            .attr('y1', function (d) {
-    //                return d.source.y;
-    //            })
-    //            .attr('x2', function (d) {
-    //                return d.target.x;
-    //            })
-    //            .attr('y2', function (d) {
-    //                return d.target.y;
-    //            });
-    //
-    //    }
+
+
+        var width = 960, height = 800;
+        var links = [
+            {source: 'Baratheon', target: 'Lannister'},
+            {source: 'Baratheon', target: 'Stack'},
+            {source: 'Lannister', target: 'Stack'},
+            {source: 'jinwei', target: 'Lannister'},
+            {source: 'Baratheon', target: 'jinwei'},
+            {source: 'jinwei', target: 'shabi'},
+        ]
+
+        var nodes = {};
+        //parse the linked to nodes
+        links.forEach(function (link) {
+            link.source = nodes[link.source] ||
+                (nodes[link.source] = {name: link.source});
+            link.target = nodes[link.target] ||
+                (nodes[link.target] = {name: link.target});
+        });
+
+
+        var svg = d3.select('body').append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        var force = d3.layout.force() //build the layout
+            .size([width, height])
+            .nodes(d3.values(nodes))
+            .links(links)
+            .on("tick", tick)
+            .linkDistance(300)
+            .start();
+
+        // add the links
+        var link = svg.selectAll('.link')
+            .data(links)
+            .enter().append('line')
+            .attr('class', 'link');
+
+        // add the nodes
+        var node = svg.selectAll('.node')
+            .data(force.nodes()) //add
+            .enter().append('circle')
+            .attr('class', 'node')
+            .attr('r', width * 0.03) //radius of circle
+
+
+        function tick(e) {
+
+            node.attr('cx', function (d) {
+                return d.x;
+            })
+                .attr('cy', function (d) {
+                    return d.y;
+                })
+                .call(force.drag);
+
+            link.attr('x1', function (d) {
+                return d.source.x;
+            })
+                .attr('y1', function (d) {
+                    return d.source.y;
+                })
+                .attr('x2', function (d) {
+                    return d.target.x;
+                })
+                .attr('y2', function (d) {
+                    return d.target.y;
+                });
+
+        }
 
 
 </script>
@@ -320,7 +327,7 @@
 <!--.force("charge", d3.forceManyBody())-->
 <!--.force("center", d3.forceCenter(width / 2, height / 2));-->
 
-<!--d3.json("Venu.json", function(error, graph) {-->
+<!--d3.jsVenuSimiar.jsonjson", function(error, graph) {-->
 <!--if (error) throw error;-->
 
 <!--var link = svg.append("g")-->
