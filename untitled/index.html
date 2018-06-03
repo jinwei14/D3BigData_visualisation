@@ -45,18 +45,6 @@
 
         <!--<a href="#" class="list-group-item list-group-item-action">Dapibus ac facilisis in</a>-->
         <!--<a href="#" class="list-group-item list-group-item-action">Morbi leo risus</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
-        <!--<a href="#" class="list-group-item list-group-item-action">Porta ac consectetur ac</a>-->
         <!--<a href="#" class="list-group-item list-group-item-action disabled">Vestibulum at eros</a>-->
     </div>
 
@@ -71,16 +59,14 @@
 
 <style>
 
-    .link {
-
-        stroke: #777;
-        stroke-opacity: 0.6;
-    }
-
     .node {
-        fill: #535251;
         stroke: #fff;
         stroke-width: 1.5px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-opacity: .6;
     }
 
 
@@ -93,7 +79,6 @@
     var restaurantName;
     //oauth_token token input
     var API;
-
 
 
     function loadJSON(path, success, error) {
@@ -135,7 +120,7 @@
     }
 
     //construct the root node and simulate the directed graph
-    function constructGraph(similar_Obj){
+    function constructGraph(similar_Obj) {
         var jsonObj = JSON.parse(similar_Obj);
 
 
@@ -221,78 +206,75 @@
 
 
     }
+    //**********************************************************************************************************************
 
+    //Constants for the SVG
+    var width = 960, height = 800;
 
-        var width = 960, height = 800;
-        var links = [
-            {source: 'Baratheon', target: 'Lannister'},
-            {source: 'Baratheon', target: 'Stack'},
-            {source: 'Lannister', target: 'Stack'},
-            {source: 'jinwei', target: 'Lannister'},
-            {source: 'Baratheon', target: 'jinwei'},
-            {source: 'jinwei', target: 'shabi'},
-        ]
+    //Set up the colour scale
+    var color = d3.scale.category20();
 
-        var nodes = {};
-        //parse the linked to nodes
-        links.forEach(function (link) {
-            link.source = nodes[link.source] ||
-                (nodes[link.source] = {name: link.source});
-            link.target = nodes[link.target] ||
-                (nodes[link.target] = {name: link.target});
-        });
+    //Set up the force layout
+    var force = d3.layout.force()
+        .charge(-120)
+        .linkDistance(60)
+        .size([width, height]);
 
+    //Append a SVG to the body of the html page. Assign this SVG as an object to svg
+    var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-        var svg = d3.select('body').append('svg')
-            .attr('width', width)
-            .attr('height', height);
-
-        var force = d3.layout.force() //build the layout
-            .size([width, height])
-            .nodes(d3.values(nodes))
-            .links(links)
-            .on("tick", tick)
-            .linkDistance(300)
+    d3.json("Test.json", function(graph) {
+        //Creates the graph data structure out of the json data
+        force.nodes(graph.nodes)
+            .links(graph.links)
             .start();
 
-        // add the links
-        var link = svg.selectAll('.link')
-            .data(links)
-            .enter().append('line')
-            .attr('class', 'link');
+        //Create all the line svgs but without locations yet
+        var link = svg.selectAll(".link")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", function (d) {
+                return Math.sqrt(d.value);
+            });
 
-        // add the nodes
-        var node = svg.selectAll('.node')
-            .data(force.nodes()) //add
-            .enter().append('circle')
-            .attr('class', 'node')
-            .attr('r', width * 0.03) //radius of circle
-
-
-        function tick(e) {
-
-            node.attr('cx', function (d) {
-                return d.x;
+        //Do the same with the circles for the nodes - no
+        var node = svg.selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", 10)
+            .style("fill", function (d) {
+                return color(d.group);
             })
-                .attr('cy', function (d) {
-                    return d.y;
-                })
-                .call(force.drag);
+            .call(force.drag);
 
-            link.attr('x1', function (d) {
+        //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
+        force.on("tick", function () {
+            link.attr("x1", function (d) {
                 return d.source.x;
             })
-                .attr('y1', function (d) {
+                .attr("y1", function (d) {
                     return d.source.y;
                 })
-                .attr('x2', function (d) {
+                .attr("x2", function (d) {
                     return d.target.x;
                 })
-                .attr('y2', function (d) {
+                .attr("y2", function (d) {
                     return d.target.y;
                 });
 
-        }
+            node.attr("cx", function (d) {
+                return d.x;
+            })
+                .attr("cy", function (d) {
+                    return d.y;
+                });
+        });
+    });
+
 
 
 </script>
@@ -389,4 +371,80 @@
 <!--d.fy = null;-->
 <!--}-->
 
+<!--</script>-->
+
+
+<!--<script>-->
+<!--&lt;!&ndash;self defined scripts and nodes&ndash;&gt;-->
+<!--var width = 960, height = 800;-->
+
+<!--var links = [-->
+<!--{source: 'Baratheon', target: 'Lannister'},-->
+<!--{source: 'Baratheon', target: 'Stack'},-->
+<!--{source: 'Lannister', target: 'Stack'},-->
+<!--{source: 'jinwei', target: 'Lannister'},-->
+<!--{source: 'Baratheon', target: 'jinwei'},-->
+<!--{source: 'jinwei', target: 'shabi'},-->
+<!--]-->
+
+<!--var nodes = {};-->
+<!--//parse the linked to nodes-->
+<!--links.forEach(function (link) {-->
+<!--link.source = nodes[link.source] ||-->
+<!--(nodes[link.source] = {name: link.source});-->
+<!--link.target = nodes[link.target] ||-->
+<!--(nodes[link.target] = {name: link.target});-->
+<!--});-->
+
+
+<!--var svg = d3.select('body').append('svg')-->
+<!--.attr('width', width)-->
+<!--.attr('height', height);-->
+
+<!--var force = d3.layout.force() //build the layout-->
+<!--.size([width, height])-->
+<!--.nodes(d3.values(nodes))-->
+<!--.links(links)-->
+<!--.on("tick", tick)-->
+<!--.linkDistance(300)-->
+<!--.start();-->
+
+<!--// add the links-->
+<!--var link = svg.selectAll('.link')-->
+<!--.data(links)-->
+<!--.enter().append('line')-->
+<!--.attr('class', 'link');-->
+
+<!--// add the nodes-->
+<!--var node = svg.selectAll('.node')-->
+<!--.data(force.nodes()) //add-->
+<!--.enter().append('circle')-->
+<!--.attr('class', 'node')-->
+<!--.attr('r', width * 0.03) //radius of circle-->
+
+
+<!--function tick(e) {-->
+
+<!--node.attr('cx', function (d) {-->
+<!--return d.x;-->
+<!--})-->
+<!--.attr('cy', function (d) {-->
+<!--return d.y;-->
+<!--})-->
+<!--.call(force.drag);-->
+
+<!--link.attr('x1', function (d) {-->
+<!--return d.source.x;-->
+<!--})-->
+<!--.attr('y1', function (d) {-->
+<!--return d.source.y;-->
+<!--})-->
+<!--.attr('x2', function (d) {-->
+<!--return d.target.x;-->
+<!--})-->
+<!--.attr('y2', function (d) {-->
+<!--return d.target.y;-->
+<!--});-->
+
+<!--}-->
 <!--</script>-->
