@@ -1,10 +1,10 @@
 1.venueName in London
 
-https://api.foursquare.com/v2/venues/search?near=London&query={venueName}&oauth_token=RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I&v=20180602
+https://api.foursquare.com/v2/venues/search?near=London&query={venueName}&oauth_token=XXXXXXX&v=20161005
 
 2.similar restaurant in a given venue
 
-https://api.foursquare.com/v2/venues/{id}/similar?oauth_token=RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I&v=20180602
+https://api.foursquare.com/v2/venues/{venueId}/similar?oauth_token=XXXXXXX&v=20161005
 
 
 Client ID
@@ -20,3 +20,7 @@ https://api.foursquare.com/v2/venues/explore?near=NYC&oauth_token=RKMGTRYDIXIE04
 
 
 //need to fill in the {} Venue as the restaurant.
+
+
+authon token
+RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I

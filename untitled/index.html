@@ -124,12 +124,7 @@
 
     }
 
-    //construct the root node and simulate the directed graph
-    function constructGraph(similar_Obj) {
-        var jsonObj = JSON.parse(similar_Obj);
 
-
-    }
 
     //passing the input restaurant when user click the right restaurant return the right
     //forced directed data that need to model.
@@ -154,6 +149,7 @@
             //the ID number of the restaurant
             innerHref.id = restaurantArr[i].id;
             innerHref.onclick = function () {
+
                 //remove this element.
                 //this.parentElement.removeChild(this);
                 console.log(this.id);
@@ -163,6 +159,7 @@
 
                         var similar = allReturnedRestaurant = JSON.stringify(data);
                         constructGraph(similar);
+                        clickOnRestaurant(this.name);
                     },
                     function (xhr) {
                         alert("finding similar restaurant failed");
@@ -211,6 +208,11 @@
 
 
     }
+
+    function constructGraph(similar_Obj) {
+        var jsonObj = JSON.parse(similar_Obj);
+    }
+
     //this part of code is for the D3 directed forced graph.
     //**********************************************************************************************************************
 
@@ -304,11 +306,15 @@
     });
 
 
-    function searchNode() {
+
+
+    //construct the root node and simulate the directed graph
+    function clickOnRestaurant(similar_name) {
+
 
         //find the node
 
-        var selectedVal = document.getElementById('search').value;
+        var selectedVal = similar_name;
         var node = svg.selectAll(".node");
 
         if (selectedVal == "none") {
@@ -326,7 +332,10 @@
 
 
         }
+
+
     }
+
 
 </script>
 
