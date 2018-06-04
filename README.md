@@ -30,3 +30,7 @@ Jinwei Boy
 https://www.youtube.com/watch?v=JJjvQ57PBvg
 
 https://www.youtube.com/watch?v=TlhZsxdmaJI
+
+## Time Spent
+4 Days (1-June to 4-June)
+Start from 0 Experience in Jquery / Js/ Angular
