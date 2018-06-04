@@ -51,7 +51,7 @@
     <p class="mt-5 mb-3 text-muted">&copy; Jinwei Zhang</p>
 </form>
 
-
+RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I
 </body>
 
 </html>
@@ -59,17 +59,18 @@
 
 <style>
 
-    .link {
-        stroke: #ccc;
-        stroke-width: 2px;
-    }
 
     .link {
         stroke: #999;
         stroke-opacity: .6;
     }
 
-    .node text {
+    .nodes circle {
+        stroke: #fff;
+        stroke-width: 1.5px;
+    }
+
+    text {
         pointer-events: none;
         font: 12px sans-serif;
     }
@@ -84,7 +85,11 @@
     var restaurantName;
     //oauth_token token input
     var API;
+//check if the space bar has been pressed
+    var spaceIsPressed = false;
 
+    //root node
+    var rootNodeID;
 
     function loadJSON(path, success, error) {
         var xhr = new XMLHttpRequest();
@@ -147,17 +152,18 @@
             innerHref.className = 'list-group-item list-group-item-action';
             //the ID number of the restaurant
             innerHref.id = restaurantArr[i].id;
+
             innerHref.onclick = function () {
 
-                //remove this element.
-                //this.parentElement.removeChild(this);
-                console.log(this.id);
+
+                rootNodeID = this.id;
                 //phrase the json data online.
                 loadJSON('https://api.foursquare.com/v2/venues/' + this.id + '/similar?oauth_token=' + API + '&v=' + dataOfToday(),
                     function (data) {
 
-                        var similar = allReturnedRestaurant = JSON.stringify(data);
-                        //constructGraph(similar);
+                        var similar = JSON.stringify(data);
+                        //find the root node of the graph.
+                        findRootNode(obj);
                         clickOnRestaurant(similar);
                     },
                     function (xhr) {
@@ -183,7 +189,6 @@
 
         restaurantName = document.getElementById('example-text-input').value;
         API = document.getElementById('inputPassword').value;
-        var allReturnedRestaurant;
 
 
         //load the json data
@@ -193,7 +198,7 @@
             loadJSON('https://api.foursquare.com/v2/venues/search?near=London&query={' + restaurantName + '}&oauth_token=' + API + '&v=' + dataOfToday(),
                 function (data) {
                     alert("succeed");
-                    allReturnedRestaurant = JSON.stringify(data);
+                    var allReturnedRestaurant = JSON.stringify(data);
                     addingList(allReturnedRestaurant);
                 },
                 function (xhr) {
@@ -227,13 +232,35 @@
     var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")"),
         link = g.append("g").attr("stroke", "#000").attr("stroke-width", 1.5).selectAll(".link"),
         node = g.append("g").attr("stroke", "#fff").attr("stroke-width", 1.5).selectAll(".node");
+
+
     //the nodes arr that need to construct
     //the link that connected them together.
     var nodes = [],
-        links = [];
+        links = [],
+        rootNode;
+
+    //find the root node and assign it to the variable rootNode
+    function findRootNode(wholeJson) {
+        var jsonObj = JSON.parse(wholeJson);
+        console.log(jsonObj);
+        console.log(rootNodeID);
+        var restaurantArr = jsonObj.response.venues;
+        var hasFind = false;
+        var counter = 0;
+        while (!hasFind && counter < restaurantArr.length) {
+
+            if (restaurantArr[counter].id == rootNodeID) {
+                rootNode = restaurantArr[counter];
+                hasFind = true;
+            }
+            counter++;
+        }
+    }
 
     //construct the root node and simulate the directed graph
     function clickOnRestaurant(similar_Obj) {
+
 
         var jsonObj = JSON.parse(similar_Obj);
         var similarArr = jsonObj.response.similarVenues.items;
@@ -251,7 +278,6 @@
 //        }
 
 
-
         simulation = d3.forceSimulation(nodes)
             .force("charge", d3.forceManyBody().strength(-1000))
             .force("link", d3.forceLink(links).distance(200))
@@ -265,9 +291,13 @@
 
 
         d3.timeout(function () {
-            var temp = similarArr[0];
-            nodes.push(temp);
-            links.push({source: similarArr[0], target: similarArr[1]}); // Add a-b.
+
+
+            nodes.push(rootNode);
+            if (arrSize == 0) {
+                console.log("no similar restaurant")
+            }
+            // Add a-b.
 //            links.push({source: similarArr[0], target: similarArr[2]}); // Add a-c.
 //            links.push({source: similarArr[0], target: similarArr[3]}); // Add a-d.
 
@@ -277,12 +307,13 @@
         d3.interval(function () {
 //            nodes.pop(); // Remove d.
 //            links.pop(); // Remove d-a.
-            counter ++;
-            if(counter < arrSize){
-                nodes.push(similarArr[counter]); // add next node.
-                links.push({source: similarArr[0], target: similarArr[counter]}); // Add a-b.
-            }
 
+            if (counter < arrSize && arrSize > 0 && spaceIsPressed == false) {
+                console.log(similarArr[counter].name);
+                nodes.push(similarArr[counter]); // add next node.
+                links.push({source: rootNode, target: similarArr[counter]}); // Add a-b.
+            }
+            counter++;
             restart();
         }, 2000, d3.now());
 
@@ -297,26 +328,52 @@
 
     function restart() {
 
-        // Apply the general update pattern to the nodes.
-        node = node.data(nodes, function (d) {
-            return d.id;
-        });
-        node.exit().remove();
-        node = node.enter().append("circle").attr("fill", function (d) {
-            return color(d.id);
-        }).attr("r", 8).merge(node);
+            var lables = node.append("text")
+                .text(function (d) {
+                    return d.id;
+                })
+                .attr('x', 6)
+                .attr('y', 3);
 
-        // Apply the general update pattern to the links.
-        link = link.data(links, function (d) {
-            return d.source.id + "-" + d.target.id;
-        });
-        link.exit().remove();
-        link = link.enter().append("line").merge(link);
+            node.append("title")
+                .text(function (d) {
+                    return d.id;
+                });
 
-        // Update and restart the simulation.
-        simulation.nodes(nodes);
-        simulation.force("link").links(links);
-        simulation.alpha(1).restart();
+
+            // Apply the general update pattern to the nodes.
+            node = node.data(nodes, function (d) {
+                return d.id;
+            });
+
+            node.exit().remove();
+            node = node.enter()
+                .append("circle")
+                .attr("fill", function (d) {
+                    return color(d.id);
+                })
+                .attr("r", 12)
+                .merge(node)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+
+            // Apply the general update pattern to the links.
+            link = link.data(links, function (d) {
+                return d.source.id + "-" + d.target.id;
+            });
+            link.exit().remove();
+            link = link.enter().append("line").merge(link);
+
+
+            // Update and restart the simulation.
+            simulation.nodes(nodes)
+                .on("tick", ticked);
+            simulation.force("link").links(links);
+            simulation.alpha(1).restart();
+
     }
 
     function ticked() {
@@ -341,137 +398,161 @@
             });
     }
 
+    function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
 
-    //***************************************************************************
-    //    //Constants for the SVG
-    //    var width = 1000, height = 800;
+    function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    document.body.onkeyup = function(e){
+        if(e.keyCode == 32){
+            spaceIsPressed = true;
+            console.log("space has been pressed");
+            alert("Stop!! space bar pressed");
+        }
+    }
+
+    //    //***************************************************************************
+    //        //Constants for the SVG
+    //        var width = 1000, height = 800;
     //
-    //       //Append a SVG to the body of the html page. Assign this SVG as an object to svg
-    //       var svg = d3.select("body").append("svg")
-    //            .attr("width", width)
-    //            .attr("height", height);
+    //           //Append a SVG to the body of the html page. Assign this SVG as an object to svg
+    //           var svg = d3.select("body").append("svg")
+    //                .attr("width", width)
+    //                .attr("height", height);
     //
-    //    //Set up the colour scale
-    //    var color = d3.scale.category20();
+    //        //Set up the colour scale
+    //        var color = d3.scale.category20();
     //
-    //    //Set up the force layout
-    //    var force = d3.layout.force()
-    //        .charge(-120)
-    //        .linkDistance(200)
-    //        .size([width, height]);
-    //
-    //
-    //    d3.json("Test.json", function (graph) {
-    //        //Creates the graph data structure out of the json data
-    //        force.nodes(graph.nodes)
-    //            .links(graph.links)
-    //            .start();
-    //
-    //        //Create all the line svgs but without locations yet
-    //        var link = svg.selectAll(".link")
-    //            .data(graph.links)
-    //            .enter().append("line")
-    //            .attr("class", "link")
-    //            .style("stroke-width", function (d) {
-    //                return Math.sqrt(d.value);
-    //            });
-    //
-    //
-    //
-    //
-    //
-    ////Do the same with the circles for the nodes - no
-    ////Changed
-    //        var node = svg.selectAll(".node")
-    //            .data(graph.nodes)
-    //            .enter().append("g")
-    //            .attr("class", "node")
-    //            .call(force.drag);
-    //
-    //        node.append("circle")
-    //            .attr("r", 12)
-    //            .style("fill", function (d) {
-    //                return color(d.group);
-    //            })
-    //
-    //        node.append("text")
-    //            .attr("dx", 10)
-    //            .attr("dy", ".35em")
-    //            .text(function (d) {
-    //                return d.name
-    //            });
-    //
-    //        //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
-    //        force.on("tick", function () {
-    //            link.attr("x1", function (d) {
-    //                return d.source.x;
-    //            })
-    //                .attr("y1", function (d) {
-    //                    return d.source.y;
-    //                })
-    //                .attr("x2", function (d) {
-    //                    return d.target.x;
-    //                })
-    //                .attr("y2", function (d) {
-    //                    return d.target.y;
-    //                });
-    //
-    //            //Changed
-    //
-    //            d3.selectAll("circle").attr("cx", function (d) {
-    //                return d.x;
-    //            })
-    //                .attr("cy", function (d) {
-    //                    return d.y;
-    //                });
-    //
-    //            d3.selectAll("text").attr("x", function (d) {
-    //                return d.x;
-    //            })
-    //                .attr("y", function (d) {
-    //                    return d.y;
-    //                });
-    //
-    //            //End Changed
-    //
-    //        });
-    //    });
+    //        //Set up the force layout
+    //        var force = d3.layout.force()
+    //            .charge(-120)
+    //            .linkDistance(200)
+    //            .size([width, height]);
     //
     //
+    //        d3.json("Test.json", function (graph) {
+    //            //Creates the graph data structure out of the json data
+    //            force.nodes(graph.nodes)
+    //                .links(graph.links)
+    //                .start();
     //
-    //    document.addEventListener("keydown", function(event) {
-    //        if(event.which == 32){
-    //            console.log("stop");
-    //        }
-    //    });
-    //
-    //    //construct the root node and simulate the directed graph
-    //    function clickOnRestaurant(similar_name) {
-    //
-    //
-    //        //find the node
-    //
-    //        var selectedVal = similar_name;
-    //        var node = svg.selectAll(".node");
-    //
-    //        if (selectedVal == "none") {
-    //            node.style("stroke", "white").style("stroke-width", "1");
-    //        } else {
-    //            var selected = node.filter(function (d, i) {
-    //                return d.name != selectedVal;
-    //            });
-    //            selected.style("opacity", "0");
+    //            //Create all the line svgs but without locations yet
     //            var link = svg.selectAll(".link")
-    //            link.style("opacity", "0");
-    //            d3.selectAll(".node, .link").transition()
-    //                .duration(2000)
-    //                .style("opacity", 1);
+    //                .data(graph.links)
+    //                .enter().append("line")
+    //                .attr("class", "link")
+    //                .style("stroke-width", function (d) {
+    //                    return Math.sqrt(d.value);
+    //                });
+    //
+    //
+    //
+    //
+    //
+    //    //Do the same with the circles for the nodes - no
+    //    //Changed
+    //            var node = svg.selectAll(".node")
+    //                .data(graph.nodes)
+    //                .enter().append("g")
+    //                .attr("class", "node")
+    //                .call(force.drag);
+    //
+    //            node.append("circle")
+    //                .attr("r", 12)
+    //                .style("fill", function (d) {
+    //                    return color(d.group);
+    //                })
+    //
+    //            node.append("text")
+    //                .attr("dx", 10)
+    //                .attr("dy", ".35em")
+    //                .text(function (d) {
+    //                    return d.name
+    //                });
+    //
+    //            //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
+    //            force.on("tick", function () {
+    //                link.attr("x1", function (d) {
+    //                    return d.source.x;
+    //                })
+    //                    .attr("y1", function (d) {
+    //                        return d.source.y;
+    //                    })
+    //                    .attr("x2", function (d) {
+    //                        return d.target.x;
+    //                    })
+    //                    .attr("y2", function (d) {
+    //                        return d.target.y;
+    //                    });
+    //
+    //                //Changed
+    //
+    //                d3.selectAll("circle").attr("cx", function (d) {
+    //                    return d.x;
+    //                })
+    //                    .attr("cy", function (d) {
+    //                        return d.y;
+    //                    });
+    //
+    //                d3.selectAll("text").attr("x", function (d) {
+    //                    return d.x;
+    //                })
+    //                    .attr("y", function (d) {
+    //                        return d.y;
+    //                    });
+    //
+    //                //End Changed
+    //
+    //            });
+    //        });
+    //
+    //
+    //
+    //        document.addEventListener("keydown", function(event) {
+    //            if(event.which == 32){
+    //                console.log("stop");
+    //            }
+    //        });
+    //
+    //        //construct the root node and simulate the directed graph
+    //        function clickOnRestaurant(similar_name) {
+    //
+    //
+    //            //find the node
+    //
+    //            var selectedVal = similar_name;
+    //            var node = svg.selectAll(".node");
+    //
+    //            if (selectedVal == "none") {
+    //                node.style("stroke", "white").style("stroke-width", "1");
+    //            } else {
+    //                var selected = node.filter(function (d, i) {
+    //                    return d.name != selectedVal;
+    //                });
+    //                selected.style("opacity", "0");
+    //                var link = svg.selectAll(".link")
+    //                link.style("opacity", "0");
+    //                d3.selectAll(".node, .link").transition()
+    //                    .duration(2000)
+    //                    .style("opacity", 1);
+    //
+    //
+    //            }
     //
     //
     //        }
-    //
-    //
-    //    }
 
 
 </script>
