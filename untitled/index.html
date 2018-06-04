@@ -125,7 +125,6 @@
     }
 
 
-
     //passing the input restaurant when user click the right restaurant return the right
     //forced directed data that need to model.
     function addingList(obj) {
@@ -158,8 +157,8 @@
                     function (data) {
 
                         var similar = allReturnedRestaurant = JSON.stringify(data);
-                        constructGraph(similar);
-                        clickOnRestaurant(this.name);
+                        //constructGraph(similar);
+                        clickOnRestaurant(similar);
                     },
                     function (xhr) {
                         alert("finding similar restaurant failed");
@@ -208,71 +207,96 @@
 
     }
 
-    function constructGraph(similar_Obj) {
-        var jsonObj = JSON.parse(similar_Obj);
-    }
+    //    function constructGraph(similar_Obj) {
+    //        var jsonObj = JSON.parse(similar_Obj);
+    //    }
 
     //this part of code is for the D3 directed forced graph.
     //**********************************************************************************************************************
-        //Constants for the SVG
-        var width = 1000, height = 800;
+    //Constants for the SVG
+    var width = 1000, height = 800;
 
-           //Append a SVG to the body of the html page. Assign this SVG as an object to svg
-           var svg = d3.select("body").append("svg")
-                .attr("width", width)
-                .attr("height", height);
-           var color = d3.scaleOrdinal(d3.schemeCategory10);
-
-    var a = {id: "a"},
-        b = {id: "b"},
-        c = {id: "c"},
-        nodes = [a, b, c],
-        links = [];
-
-    var simulation = d3.forceSimulation(nodes)
-        .force("charge", d3.forceManyBody().strength(-1000))
-        .force("link", d3.forceLink(links).distance(200))
-        .force("x", d3.forceX())
-        .force("y", d3.forceY())
-        .alphaTarget(1)
-        .on("tick", ticked);
+    //Append a SVG to the body of the html page. Assign this SVG as an object to svg
+    var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+    //simulation for the nodes link ticks
+    var simulation;
 
     var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")"),
         link = g.append("g").attr("stroke", "#000").attr("stroke-width", 1.5).selectAll(".link"),
         node = g.append("g").attr("stroke", "#fff").attr("stroke-width", 1.5).selectAll(".node");
+    //the nodes arr that need to construct
+    //the link that connected them together.
+    var nodes = [],
+        links = [];
 
-    restart();
+    //construct the root node and simulate the directed graph
+    function clickOnRestaurant(similar_Obj) {
 
-    d3.timeout(function() {
-        links.push({source: a, target: b}); // Add a-b.
-        links.push({source: b, target: c}); // Add b-c.
-        links.push({source: c, target: a}); // Add c-a.
+        var jsonObj = JSON.parse(similar_Obj);
+        var similarArr = jsonObj.response.items;
+//        var a = {id: "a"},
+//            b = {id: "b"},
+//            c = {id: "c"};
+//        nodes = [a, b, c];
+        var i;
+        for (i = 0; i < jsonObj.response.count; i++) {
+            var temp = similarArr[i];
+            nodes.push(temp);
+        }
+
+
+        simulation = d3.forceSimulation(nodes)
+            .force("charge", d3.forceManyBody().strength(-1000))
+            .force("link", d3.forceLink(links).distance(200))
+            .force("x", d3.forceX())
+            .force("y", d3.forceY())
+            .alphaTarget(1)
+            .on("tick", ticked);
+
+
         restart();
-    }, 1000);
 
-    d3.interval(function() {
-        nodes.pop(); // Remove c.
-        links.pop(); // Remove c-a.
-        links.pop(); // Remove b-c.
-        restart();
-    }, 2000, d3.now());
+        d3.timeout(function () {
+            links.push({source: a, target: b}); // Add a-b.
+            links.push({source: b, target: c}); // Add b-c.
+            links.push({source: c, target: a}); // Add c-a.
+            restart();
+        }, 1000);
 
-    d3.interval(function() {
-        nodes.push(c); // Re-add c.
-        links.push({source: b, target: c}); // Re-add b-c.
-        links.push({source: c, target: a}); // Re-add c-a.
-        restart();
-    }, 2000, d3.now() + 1000);
+        d3.interval(function () {
+            nodes.pop(); // Remove c.
+            links.pop(); // Remove c-a.
+            links.pop(); // Remove b-c.
+            restart();
+        }, 2000, d3.now());
+
+        d3.interval(function () {
+            nodes.push(c); // Re-add c.
+            links.push({source: b, target: c}); // Re-add b-c.
+            links.push({source: c, target: a}); // Re-add c-a.
+            restart();
+        }, 2000, d3.now() + 1000);
+    }
+
 
     function restart() {
 
         // Apply the general update pattern to the nodes.
-        node = node.data(nodes, function(d) { return d.id;});
+        node = node.data(nodes, function (d) {
+            return d.id;
+        });
         node.exit().remove();
-        node = node.enter().append("circle").attr("fill", function(d) { return color(d.id); }).attr("r", 8).merge(node);
+        node = node.enter().append("circle").attr("fill", function (d) {
+            return color(d.id);
+        }).attr("r", 8).merge(node);
 
         // Apply the general update pattern to the links.
-        link = link.data(links, function(d) { return d.source.id + "-" + d.target.id; });
+        link = link.data(links, function (d) {
+            return d.source.id + "-" + d.target.id;
+        });
         link.exit().remove();
         link = link.enter().append("line").merge(link);
 
@@ -283,144 +307,158 @@
     }
 
     function ticked() {
-        node.attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; })
+        node.attr("cx", function (d) {
+            return d.x;
+        })
+            .attr("cy", function (d) {
+                return d.y;
+            })
 
-        link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+        link.attr("x1", function (d) {
+            return d.source.x;
+        })
+            .attr("y1", function (d) {
+                return d.source.y;
+            })
+            .attr("x2", function (d) {
+                return d.target.x;
+            })
+            .attr("y2", function (d) {
+                return d.target.y;
+            });
     }
+
+
     //***************************************************************************
-//    //Constants for the SVG
-//    var width = 1000, height = 800;
-//
-//       //Append a SVG to the body of the html page. Assign this SVG as an object to svg
-//       var svg = d3.select("body").append("svg")
-//            .attr("width", width)
-//            .attr("height", height);
-//
-//    //Set up the colour scale
-//    var color = d3.scale.category20();
-//
-//    //Set up the force layout
-//    var force = d3.layout.force()
-//        .charge(-120)
-//        .linkDistance(200)
-//        .size([width, height]);
-//
-//
-//    d3.json("Test.json", function (graph) {
-//        //Creates the graph data structure out of the json data
-//        force.nodes(graph.nodes)
-//            .links(graph.links)
-//            .start();
-//
-//        //Create all the line svgs but without locations yet
-//        var link = svg.selectAll(".link")
-//            .data(graph.links)
-//            .enter().append("line")
-//            .attr("class", "link")
-//            .style("stroke-width", function (d) {
-//                return Math.sqrt(d.value);
-//            });
-//
-//
-//
-//
-//
-////Do the same with the circles for the nodes - no
-////Changed
-//        var node = svg.selectAll(".node")
-//            .data(graph.nodes)
-//            .enter().append("g")
-//            .attr("class", "node")
-//            .call(force.drag);
-//
-//        node.append("circle")
-//            .attr("r", 12)
-//            .style("fill", function (d) {
-//                return color(d.group);
-//            })
-//
-//        node.append("text")
-//            .attr("dx", 10)
-//            .attr("dy", ".35em")
-//            .text(function (d) {
-//                return d.name
-//            });
-//
-//        //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
-//        force.on("tick", function () {
-//            link.attr("x1", function (d) {
-//                return d.source.x;
-//            })
-//                .attr("y1", function (d) {
-//                    return d.source.y;
-//                })
-//                .attr("x2", function (d) {
-//                    return d.target.x;
-//                })
-//                .attr("y2", function (d) {
-//                    return d.target.y;
-//                });
-//
-//            //Changed
-//
-//            d3.selectAll("circle").attr("cx", function (d) {
-//                return d.x;
-//            })
-//                .attr("cy", function (d) {
-//                    return d.y;
-//                });
-//
-//            d3.selectAll("text").attr("x", function (d) {
-//                return d.x;
-//            })
-//                .attr("y", function (d) {
-//                    return d.y;
-//                });
-//
-//            //End Changed
-//
-//        });
-//    });
-//
-//
-//
-//    document.addEventListener("keydown", function(event) {
-//        if(event.which == 32){
-//            console.log("stop");
-//        }
-//    });
-//
-//    //construct the root node and simulate the directed graph
-//    function clickOnRestaurant(similar_name) {
-//
-//
-//        //find the node
-//
-//        var selectedVal = similar_name;
-//        var node = svg.selectAll(".node");
-//
-//        if (selectedVal == "none") {
-//            node.style("stroke", "white").style("stroke-width", "1");
-//        } else {
-//            var selected = node.filter(function (d, i) {
-//                return d.name != selectedVal;
-//            });
-//            selected.style("opacity", "0");
-//            var link = svg.selectAll(".link")
-//            link.style("opacity", "0");
-//            d3.selectAll(".node, .link").transition()
-//                .duration(2000)
-//                .style("opacity", 1);
-//
-//
-//        }
-//
-//
-//    }
+    //    //Constants for the SVG
+    //    var width = 1000, height = 800;
+    //
+    //       //Append a SVG to the body of the html page. Assign this SVG as an object to svg
+    //       var svg = d3.select("body").append("svg")
+    //            .attr("width", width)
+    //            .attr("height", height);
+    //
+    //    //Set up the colour scale
+    //    var color = d3.scale.category20();
+    //
+    //    //Set up the force layout
+    //    var force = d3.layout.force()
+    //        .charge(-120)
+    //        .linkDistance(200)
+    //        .size([width, height]);
+    //
+    //
+    //    d3.json("Test.json", function (graph) {
+    //        //Creates the graph data structure out of the json data
+    //        force.nodes(graph.nodes)
+    //            .links(graph.links)
+    //            .start();
+    //
+    //        //Create all the line svgs but without locations yet
+    //        var link = svg.selectAll(".link")
+    //            .data(graph.links)
+    //            .enter().append("line")
+    //            .attr("class", "link")
+    //            .style("stroke-width", function (d) {
+    //                return Math.sqrt(d.value);
+    //            });
+    //
+    //
+    //
+    //
+    //
+    ////Do the same with the circles for the nodes - no
+    ////Changed
+    //        var node = svg.selectAll(".node")
+    //            .data(graph.nodes)
+    //            .enter().append("g")
+    //            .attr("class", "node")
+    //            .call(force.drag);
+    //
+    //        node.append("circle")
+    //            .attr("r", 12)
+    //            .style("fill", function (d) {
+    //                return color(d.group);
+    //            })
+    //
+    //        node.append("text")
+    //            .attr("dx", 10)
+    //            .attr("dy", ".35em")
+    //            .text(function (d) {
+    //                return d.name
+    //            });
+    //
+    //        //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
+    //        force.on("tick", function () {
+    //            link.attr("x1", function (d) {
+    //                return d.source.x;
+    //            })
+    //                .attr("y1", function (d) {
+    //                    return d.source.y;
+    //                })
+    //                .attr("x2", function (d) {
+    //                    return d.target.x;
+    //                })
+    //                .attr("y2", function (d) {
+    //                    return d.target.y;
+    //                });
+    //
+    //            //Changed
+    //
+    //            d3.selectAll("circle").attr("cx", function (d) {
+    //                return d.x;
+    //            })
+    //                .attr("cy", function (d) {
+    //                    return d.y;
+    //                });
+    //
+    //            d3.selectAll("text").attr("x", function (d) {
+    //                return d.x;
+    //            })
+    //                .attr("y", function (d) {
+    //                    return d.y;
+    //                });
+    //
+    //            //End Changed
+    //
+    //        });
+    //    });
+    //
+    //
+    //
+    //    document.addEventListener("keydown", function(event) {
+    //        if(event.which == 32){
+    //            console.log("stop");
+    //        }
+    //    });
+    //
+    //    //construct the root node and simulate the directed graph
+    //    function clickOnRestaurant(similar_name) {
+    //
+    //
+    //        //find the node
+    //
+    //        var selectedVal = similar_name;
+    //        var node = svg.selectAll(".node");
+    //
+    //        if (selectedVal == "none") {
+    //            node.style("stroke", "white").style("stroke-width", "1");
+    //        } else {
+    //            var selected = node.filter(function (d, i) {
+    //                return d.name != selectedVal;
+    //            });
+    //            selected.style("opacity", "0");
+    //            var link = svg.selectAll(".link")
+    //            link.style("opacity", "0");
+    //            d3.selectAll(".node, .link").transition()
+    //                .duration(2000)
+    //                .style("opacity", 1);
+    //
+    //
+    //        }
+    //
+    //
+    //    }
 
 
 </script>
