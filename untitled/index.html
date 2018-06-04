@@ -288,8 +288,8 @@
 
 
         simulation = d3.forceSimulation(nodes)
-            .force("charge", d3.forceManyBody().strength(-1000))
-            .force("link", d3.forceLink(links).distance(200))
+            .force("charge", d3.forceManyBody().strength(-500))
+            .force("link", d3.forceLink(links).distance(100))
             .force("x", d3.forceX())
             .force("y", d3.forceY())
             .alphaTarget(1)
@@ -326,7 +326,7 @@
 
                 //de-queue the first element.
                 queue.shift();
-                //the second element become the root
+                //the second element becomes the root
                 if(queue.length!=0) {
                     rootNode = queue[0];
 
@@ -356,10 +356,11 @@
                 links.push({source: rootNode, target: similarArr[counter]}); // Add a-b.
                 //move the counter point to the next chunk.
                 counter++;
+                restart();
             }
 
-            restart();
-        }, 2000, d3.now());
+
+        }, 500, d3.now());
 
 
 
