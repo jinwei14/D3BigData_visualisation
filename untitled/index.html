@@ -73,6 +73,7 @@ RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I
     text {
         pointer-events: none;
         font: 12px sans-serif;
+        stroke: #000000;
     }
 
 
@@ -231,9 +232,10 @@ RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I
 
     var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")"),
         link = g.append("g").attr("stroke", "#000").attr("stroke-width", 1.5).selectAll(".link"),
-        node = g.append("g").attr("stroke", "#fff").attr("stroke-width", 1.5).selectAll(".node");
+        node = g.append("g").attr("stroke", "#fff").attr("stroke-width", 1.5).selectAll(".node"),
 
-
+    labels = svg.append('svg:g')
+        .selectAll('.labels');
     //the nodes arr that need to construct
     //the link that connected them together.
     var nodes = [],
@@ -324,21 +326,11 @@ RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I
 //            restart();
 //        }, 2000, d3.now() + 1000);
     }
-
-
+//    var labels = svg.append('svg:g')
+//        .selectAll('.labels');
+//var increasement = 0;
     function restart() {
 
-            var lables = node.append("text")
-                .text(function (d) {
-                    return d.id;
-                })
-                .attr('x', 6)
-                .attr('y', 3);
-
-            node.append("title")
-                .text(function (d) {
-                    return d.id;
-                });
 
 
             // Apply the general update pattern to the nodes.
@@ -360,6 +352,25 @@ RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I
                     .on("end", dragended));
 
 
+
+//        // Apply the label to each node!
+//        labels = labels.data(nodes, function (d) {
+//            return d.name;
+//        });
+//
+//        labels.exit().remove();
+//
+//        labels.enter()
+//            .append("text")
+//
+//            .text(function(d) {
+//                return d.name;
+//            })
+//            .attr('x', 6)
+//            .attr('y', 15+increasement);
+//
+//        increasement+=20;
+
             // Apply the general update pattern to the links.
             link = link.data(links, function (d) {
                 return d.source.id + "-" + d.target.id;
@@ -377,25 +388,16 @@ RKMGTRYDIXIE04C0LE4XMSGNHYBDYER3GOAXS02T3AJNQD3I
     }
 
     function ticked() {
-        node.attr("cx", function (d) {
-            return d.x;
-        })
-            .attr("cy", function (d) {
-                return d.y;
-            })
+        link
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
 
-        link.attr("x1", function (d) {
-            return d.source.x;
-        })
-            .attr("y1", function (d) {
-                return d.source.y;
-            })
-            .attr("x2", function (d) {
-                return d.target.x;
-            })
-            .attr("y2", function (d) {
-                return d.target.y;
-            });
+        node
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+
     }
 
     function dragstarted(d) {
