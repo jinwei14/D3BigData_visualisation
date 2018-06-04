@@ -24,3 +24,9 @@ To get an oauth token go https://developer.foursquare.com/docs/explore#req=users
 
 
 Jinwei Boy
+
+
+## Video Demo
+https://www.youtube.com/watch?v=JJjvQ57PBvg
+
+https://www.youtube.com/watch?v=TlhZsxdmaJI
