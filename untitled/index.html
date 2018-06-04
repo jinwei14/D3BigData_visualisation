@@ -236,16 +236,19 @@
     function clickOnRestaurant(similar_Obj) {
 
         var jsonObj = JSON.parse(similar_Obj);
-        var similarArr = jsonObj.response.items;
+        var similarArr = jsonObj.response.similarVenues.items;
+        var arrSize = jsonObj.response.similarVenues.count;
+        var counter = 0;
 //        var a = {id: "a"},
 //            b = {id: "b"},
 //            c = {id: "c"};
 //        nodes = [a, b, c];
-        var i;
-        for (i = 0; i < jsonObj.response.count; i++) {
-            var temp = similarArr[i];
-            nodes.push(temp);
-        }
+
+//        var i;
+//        for (i = 0; i < arrSize; i++) {
+//            var temp = similarArr[i];
+//            nodes.push(temp);
+//        }
 
 
 
@@ -261,25 +264,33 @@
         restart();
 
         d3.timeout(function () {
-            links.push({source: a, target: b}); // Add a-b.
-            links.push({source: b, target: c}); // Add b-c.
-            links.push({source: c, target: a}); // Add c-a.
+            var temp = similarArr[0];
+            nodes.push(temp);
+            links.push({source: similarArr[0], target: similarArr[1]}); // Add a-b.
+//            links.push({source: similarArr[0], target: similarArr[2]}); // Add a-c.
+//            links.push({source: similarArr[0], target: similarArr[3]}); // Add a-d.
+
             restart();
         }, 1000);
 
         d3.interval(function () {
-            nodes.pop(); // Remove c.
-            links.pop(); // Remove c-a.
-            links.pop(); // Remove b-c.
+//            nodes.pop(); // Remove d.
+//            links.pop(); // Remove d-a.
+            counter ++;
+            if(counter < arrSize){
+                nodes.push(similarArr[counter]); // add next node.
+                links.push({source: similarArr[0], target: similarArr[counter]}); // Add a-b.
+            }
+
             restart();
         }, 2000, d3.now());
 
-        d3.interval(function () {
-            nodes.push(c); // Re-add c.
-            links.push({source: b, target: c}); // Re-add b-c.
-            links.push({source: c, target: a}); // Re-add c-a.
-            restart();
-        }, 2000, d3.now() + 1000);
+//        d3.interval(function () {
+//            nodes.push(similarArr[3]); // Re-add d.
+//            links.push({source: similarArr[0], target: similarArr[3]}); // Re-add d-a.
+//
+//            restart();
+//        }, 2000, d3.now() + 1000);
     }
 
 
